@@ -337,13 +337,18 @@ public class Visualizer {
 	public Visualizer() throws java.io.IOException {
 		//interface for runTest
 		if (vis)
-		{   jf = new JFrame();
+		{   
+			jf = new JFrame();
+			jf.setTitle("THE GAME");
+			jf.setSize(800, 600);
+			jf.setResizable(false);
 			v = new Vis();
 			jf.getContentPane().add(v);
 		}
 		is = new InputStream[2];
 		os = new OutputStream[2];
 		br = new BufferedReader[2];
+		jf.setVisible(true);
 		tournament();
 	}
 	// -----------------------------------------
