@@ -1,18 +1,13 @@
 import java.util.*;
-import java.lang.*;
-import java.text.*;
 import java.awt.*;
-import java.awt.geom.*;
 import java.awt.event.*;
 import java.awt.image.*;
 import java.io.*;
-import java.security.*;
 import javax.swing.*;
-import javax.imageio.*;
 
 public class Visualizer {
 	// Tournament info
-	static final String[] programs = {"random.exe", "random2.exe", "bruteforce.exe", "java sam.BattleshipTest"};
+	static final String[] programs = {"random.exe", "9000.exe", "bruteforce.exe"};
 	static int[] wins;
 	static final int matches = 1; // Number of matches in round-robin tournament with each competitor
 	String[] progNames; // Names of all programs
@@ -20,10 +15,17 @@ public class Visualizer {
 	final int S = 10;		//board size
 	String[] names = new String[2];
 	int[][][] ships = new int[2][10][2];
+        int[][] lastShots = new int[2][2];
 	final int[][] dir = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}};
 	final int[] lengths = {5, 4, 3, 3, 2};
 	int[][][] grid = new int[2][S][S];
-	final static boolean debug = true;
+	final static boolean debug = false;
+        // ----------------------------------------
+	final int L = 32; // Length of square
+	final int G = 20; // Gap width
+	final int T = 40; // Text height
+	final int W = 2*S*L + 4*G;
+	final int H = L*S + 3*G + T;
 	// -----------------------------------------
 	private int[] parse(String s) {
 		int[] output = new int[2];
@@ -56,12 +58,9 @@ public class Visualizer {
 	public int runTest() throws IOException {
 		int winner = -1;
 	  try {
-		if (vis) {
-			jf.setSize(S*40+200,S*40+30);
-			v.repaint();
-			jf.setVisible(true);
-		}
 		init();
+		for(int i=0; i < 4; i++)
+			lastShots[i&1][i>>1] = -1;
 		//get names
 		StringBuffer sb = new StringBuffer();
 		sb.append("name\n");
@@ -134,7 +133,7 @@ public class Visualizer {
 		int turn = 0;
 		int[] remaining = {17, 17};
 		int[][] hits = new int[2][5];
-		while (true) {
+		for(int turns = 0; turns < 400; turns++) {
 			String command = "fire\n";
 			os[turn].write(command.getBytes());
 			os[turn].flush();
@@ -148,6 +147,7 @@ public class Visualizer {
 				winner = 1 - turn;
 				throw new Exception("Invalid fire");
 			}
+                        lastShots[turn] = a;
 			int hit = 0;
 			if(grid[1 - turn][a[0]][a[1]] % 2 == 0) {
 				if(grid[1 - turn][a[0]][a[1]] > 0) {
@@ -155,7 +155,6 @@ public class Visualizer {
 					remaining[1 - turn]--;
 					hits[1 - turn][ship]++;
 					hit = ship + 1;
-					// if(hits[1-turn][ship] == lengths[ship]) sunk = true;
 				}
 				grid[1 - turn][a[0]][a[1]]++;
 			}
@@ -175,6 +174,12 @@ public class Visualizer {
 				System.out.println();
 				System.out.println();
 			}
+			command = "hits\n";
+			os[turn].write(command.getBytes());
+			os[turn].flush();
+			command = "" + hit + "\n";
+			os[turn].write(command.getBytes());
+			os[turn].flush();
 			if(remaining[1 - turn] == 0) {
 				winner = turn;
 				command = "exit\n";
@@ -183,13 +188,6 @@ public class Visualizer {
 				os[1].write(command.getBytes());
 				os[1].flush();
 				break;
-			} else {
-				command = "hits\n";
-				os[turn].write(command.getBytes());
-				os[turn].flush();
-				command = "" + hit + "\n";
-				os[turn].write(command.getBytes());
-				os[turn].flush();
 			}
 			turn = 1 - turn;
 		}
@@ -199,9 +197,16 @@ public class Visualizer {
 		System.err.println("An exception occurred.");
 		e.printStackTrace();
 		return winner;
+	  } finally {
+		  terminate();
 	  }
 	}
 	public void tournament() throws IOException {
+		if (vis) {
+			jf.setSize(W,H);
+			v.repaint();
+			jf.setVisible(true);
+		}
 		int N = programs.length;
 		if(N < 2) return;
 		int K = N * (N-1) / 2;
@@ -238,6 +243,9 @@ public class Visualizer {
 				unterminate();
 				int k = runTest();
 				terminate();
+				try {
+					Thread.sleep(del2);
+				} catch(Exception e) {}
 				if(progNames[matchups[i][0]] == null)
 					progNames[matchups[i][0]] = names[0];
 				if(progNames[matchups[i][1]] == null)
@@ -288,7 +296,7 @@ public class Visualizer {
 	static String prog1, prog2;
 	static boolean vis;
 	static Process proc1, proc2;
-	static int del;
+	static int del, del2;
 	InputStream[] is;
 	OutputStream[] os;
 	BufferedReader[] br;
@@ -305,16 +313,69 @@ public class Visualizer {
 		v.repaint();
 		if (del>0)
 			try { Thread.sleep(del); }
-			catch (Exception e) { e.printStackTrace(); };
+			catch (Exception e) { e.printStackTrace(); }
 	}
 	// -----------------------------------------
 	public class Vis extends JPanel implements WindowListener {
+		Color[] colors;
 		public void paint(Graphics g) {
 			//do painting here
-
+			BufferedImage im = new BufferedImage(W, H, BufferedImage.TYPE_INT_RGB);
+			Graphics2D g2 = (Graphics2D)im.getGraphics();
+			//background
+			g2.setColor(Color.LIGHT_GRAY);
+			g2.fillRect(0,0,W,H);
+			// names
+			g2.setColor(Color.BLACK);
+			g2.setFont(new Font("SansSerif", Font.PLAIN, 24));
+			if(names[0] != null)
+				g2.drawString(names[0], G, T - 10);
+			if(names[1] != null)
+				g2.drawString(names[1], G + L*S + 2*G, T - 10);
+			// grids
+			int x0 = G;
+			int y0 = T;
+			for(int i=0; i < S; i++) {
+				for(int j=0; j < S; j++) {
+					g2.setColor(colors[grid[0][i][j] / 2]);
+					g2.fillRect(x0 + j*L, y0 + i*L, L, L);
+					g2.setColor(Color.BLACK);
+					g2.drawRect(x0 + j*L, y0 + i*L, L, L);
+					if(grid[0][i][j] % 2 == 1) {
+					if(i == lastShots[1][0] && j == lastShots[1][1])
+						g2.fillOval(x0 + j*L + L/4, y0 + i*L + L/4, L/2, L/2);
+					else
+						g2.drawOval(x0 + j*L + L/4, y0 + i*L + L/4, L/2, L/2);
+					}
+				}
+			}
+			x0 = G + L*S + 2*G;
+			y0 = T;
+			for(int i=0; i < S; i++) {
+				for(int j=0; j < S; j++) {
+					g2.setColor(colors[grid[1][i][j] / 2]);
+					g2.fillRect(x0 + j*L, y0 + i*L, L, L);
+					g2.setColor(Color.BLACK);
+					g2.drawRect(x0 + j*L, y0 + i*L, L, L);
+					if(grid[1][i][j] % 2 == 1) {
+					if(i == lastShots[0][0] && j == lastShots[0][1])
+						g2.fillOval(x0 + j*L + L/4, y0 + i*L + L/4, L/2, L/2);
+					else
+						g2.drawOval(x0 + j*L + L/4, y0 + i*L + L/4, L/2, L/2);
+					}
+				}
+			}
+			g.drawImage(im,0,0,W,H,null);
 		}
 		public Vis() {
 			jf.addWindowListener(this);
+			colors = new Color[6];
+			colors[0] = new Color(64, 128, 128);
+			colors[1] = new Color(70, 204, 36);
+			colors[2] = new Color(250, 238, 20);
+			colors[3] = new Color(170, 70, 230);
+			colors[4] = new Color(255, 151, 47);
+			colors[5] = new Color(30, 68, 217);
 		}
 		//WindowListener
 		public void windowClosing(WindowEvent e){
@@ -337,24 +398,20 @@ public class Visualizer {
 	public Visualizer() throws java.io.IOException {
 		//interface for runTest
 		if (vis)
-		{   
-			jf = new JFrame();
-			jf.setTitle("THE GAME");
-			jf.setSize(800, 600);
-			jf.setResizable(false);
+		{   jf = new JFrame();
 			v = new Vis();
 			jf.getContentPane().add(v);
 		}
 		is = new InputStream[2];
 		os = new OutputStream[2];
 		br = new BufferedReader[2];
-		jf.setVisible(true);
 		tournament();
 	}
 	// -----------------------------------------
 	public static void main(String[] args) throws java.io.IOException {
 		vis = true;
-		del=100;
+		del=200; // Time between each turn in ms
+		del2=3000; // Time between each match in ms
 		if(debug) vis = false;
 		Visualizer v = new Visualizer();
 	}
