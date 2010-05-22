@@ -273,10 +273,23 @@ public class Visualizer {
 				}
 			}
 		}
-		// Output results somehow
+		// Output results to a JFrame
+		/**
+		Todo:
+		- Add JLabels to JFrame
+		- Make it not look like shit
+		- Add actionListener to button to close window when dismissed
+		*/
+		JFrame resultsFrame = new JFrame();
+		resultsFrame.setTitle("Tournament Results");
+		resultsFrame.setResizable(false);
+		resultsFrame.setSize(800, 600);
+		JLabel[] resultsLabel = new JLabel[N];
 		for(int i = 0; i < N; i++) {
+			resultsLabel[i] = new JLabel(progNames[i] + " won " + wins[i] + " games.");
 			System.out.println(progNames[i] + " won " + wins[i] + " games.");
 		}
+		resultsFrame.setVisible(true);
 	}
 	public void unterminate() {
 		if (prog1 != null) {
