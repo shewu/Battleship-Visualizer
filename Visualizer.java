@@ -4,13 +4,14 @@ import java.awt.event.*;
 import java.awt.image.*;
 import java.io.*;
 import javax.swing.*;
+import javax.imageio.*;
 import javax.sound.sampled.*;
 
 public class Visualizer {
 	// Tournament info
 	static final String[] programs = {"./battleship", "java Main"};
 	static int[] wins;
-	static final int matches = 5; // Number of matches in round-robin tournament with each competitor
+	static final int matches = 2; // Number of matches in round-robin tournament with each competitor
 	String[] progNames; // Names of all programs
 	// Game variables
 	final int S = 10; //board size
@@ -32,6 +33,9 @@ public class Visualizer {
 	File soundFile = new File("rsrc/explozor.wav");
 	AudioInputStream audioInputStream;
 	// -----------------------------------------
+	// Board background image : courtesy of google images
+	BufferedImage boardBg = null;
+	// -----------------------------------------
 	public void explozor() {
 		AudioFormat audioFormat = audioInputStream.getFormat();
 		if(debug) {
@@ -45,7 +49,6 @@ public class Visualizer {
 		try {
 			// Create a SourceDataLine for <strong class="highlight">play</strong> back (throws LineUnavailableException).
 			SourceDataLine dataLine = (SourceDataLine)AudioSystem.getLine(info);
-			// System.out.println( "SourceDataLine class=" + dataLine.getClass() );
 
       		// The line acquires system resources (throws LineAvailableException).
       		dataLine.open(audioFormat);
@@ -209,7 +212,7 @@ public class Visualizer {
 			int turn = 0;
 			int[] remaining = {17, 17};
 			int[][] hits = new int[2][5];
-			draw();
+			v.repaint();
 			for(int turns = 0; turns < 400; turns++) {
 				String command = "fire\n";
 				os[turn].write(command.getBytes());
@@ -276,7 +279,7 @@ public class Visualizer {
 			e.printStackTrace();
 			return winner;
 		} finally {
-			  terminate();
+			terminate();
 		}
 	}
 	public void tournament() throws IOException {
@@ -442,10 +445,10 @@ public class Visualizer {
 	public class Vis extends JPanel implements WindowListener {
 		Color[] colors;
 		public void paint(Graphics g) {
-			//do painting here
+			// do painting here
 			BufferedImage im = new BufferedImage(W, H, BufferedImage.TYPE_INT_RGB);
 			Graphics2D g2 = (Graphics2D)im.getGraphics();
-			//background
+			// background
 			g2.setColor(Color.LIGHT_GRAY);
 			g2.fillRect(0,0,W,H);
 			// names
@@ -460,16 +463,23 @@ public class Visualizer {
 			// grids
 			int x0 = G;
 			int y0 = T;
+			// draw board background
+			g2.drawImage(boardBg, x0, y0, null);
+			// then draw grid, ships
 			for(int i=0; i < S; i++) {
 				for(int j=0; j < S; j++) {
-					g2.setColor(colors[grid[0][i][j] / 2]);
-					g2.fillRect(x0 + j*L, y0 + i*L, L, L);
+					if(grid[0][i][j] / 2 != 0) {
+						g2.setColor(colors[grid[0][i][j] / 2]);
+						g2.fillRect(x0 + j*L, y0 + i*L, L, L);
+					}
 					g2.setColor(Color.BLACK);
 					g2.drawRect(x0 + j*L, y0 + i*L, L, L);
 					if(grid[0][i][j] % 2 == 1) {
 						if(i == lastShots[1][0] && j == lastShots[1][1]) {
 							g2.fillOval(x0 + j*L + L/4, y0 + i*L + L/4, L/2, L/2);
 						} else {
+							// draw X if hit
+							// draw O if miss
 							g2.drawOval(x0 + j*L + L/4, y0 + i*L + L/4, L/2, L/2);
 						}
 					}
@@ -477,16 +487,23 @@ public class Visualizer {
 			}
 			x0 = G + L*S + 2*G;
 			y0 = T;
+			// draw board background
+			g2.drawImage(boardBg, x0, y0, null);
+			// then draw grid, ships
 			for(int i=0; i < S; i++) {
 				for(int j=0; j < S; j++) {
-					g2.setColor(colors[grid[1][i][j] / 2]);
-					g2.fillRect(x0 + j*L, y0 + i*L, L, L);
+					if(grid[1][i][j] / 2 != 0) {
+						g2.setColor(colors[grid[1][i][j] / 2]);
+						g2.fillRect(x0 + j*L, y0 + i*L, L, L);
+					}
 					g2.setColor(Color.BLACK);
 					g2.drawRect(x0 + j*L, y0 + i*L, L, L);
 					if(grid[1][i][j] % 2 == 1) {
 						if(i == lastShots[0][0] && j == lastShots[0][1]) {
 							g2.fillOval(x0 + j*L + L/4, y0 + i*L + L/4, L/2, L/2);
 						} else {
+							// draw X if hit
+							// draw O if miss
 							g2.drawOval(x0 + j*L + L/4, y0 + i*L + L/4, L/2, L/2);
 						}
 					}
@@ -497,7 +514,7 @@ public class Visualizer {
 		public Vis() {
 			jf.addWindowListener(this);
 			colors = new Color[6];
-			colors[0] = new Color(64, 128, 128);
+			colors[0] = new Color(64, 128, 128); // board bg color; not used
 			colors[1] = new Color(70, 204, 36);
 			colors[2] = new Color(250, 238, 20);
 			colors[3] = new Color(170, 70, 230);
@@ -531,15 +548,17 @@ public class Visualizer {
 	}
 	// -----------------------------------------
 	public Visualizer() throws java.io.IOException {
-		// prepare soundfx
 		try {
+			// prepare soundfx
 			audioInputStream = AudioSystem.getAudioInputStream(soundFile);
+			// prepare board background
+			boardBg = ImageIO.read(new File("rsrc/ocean.jpg"));
 		} catch(Exception e) {
-			System.out.println("Sound file is a fail.");
+			System.out.println("Holy balls!");
 			e.printStackTrace();
 		}
 		// interface for runTest
-		if (vis) {   
+		if(vis) {   
 			jf = new JFrame();
 			v = new Vis();
 			jf.getContentPane().add(v);
@@ -552,7 +571,7 @@ public class Visualizer {
 	// -----------------------------------------
 	public static void main(String[] args) throws java.io.IOException {
 		vis = true;
-		del=500; // Time between each turn in ms
+		del=250; // Time between each turn in ms
 		del2=3000; // Time between each match in ms
 		if(debug) vis = false;
 		Visualizer v = new Visualizer();
