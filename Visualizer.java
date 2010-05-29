@@ -4,6 +4,7 @@ import java.awt.event.*;
 import java.awt.image.*;
 import java.io.*;
 import javax.swing.*;
+import javax.sound.sampled.*;
 
 public class Visualizer {
 	// Tournament info
@@ -12,7 +13,7 @@ public class Visualizer {
 	static final int matches = 5; // Number of matches in round-robin tournament with each competitor
 	String[] progNames; // Names of all programs
 	// Game variables
-	final int S = 10;		//board size
+	final int S = 10; //board size
 	String[] names = new String[2];
 	int[][][] ships = new int[2][10][2];
     int[][] lastShots = new int[2][2];
@@ -20,12 +21,76 @@ public class Visualizer {
 	final int[] lengths = {5, 4, 3, 3, 2};
 	int[][][] grid = new int[2][S][S];
 	final static boolean debug = false;
-        // ----------------------------------------
+	// ----------------------------------------
 	final int L = 32; // Length of square
 	final int G = 20; // Gap width
 	final int T = 40; // Text height
 	final int W = 2*S*L + 4*G;
 	final int H = L*S + 3*G + T;
+	// -----------------------------------------
+	// Sound : credits to http://www.daniweb.com/forums/thread17484.html
+	File soundFile = new File("rsrc/explozor.wav");
+	AudioInputStream audioInputStream;
+	// -----------------------------------------
+	public void explozor() {
+		AudioFormat audioFormat = audioInputStream.getFormat();
+		if(debug) {
+			System.out.println("Play input audio format = "+audioFormat);
+		}
+		DataLine.Info info = new DataLine.Info(SourceDataLine.class, audioFormat);
+		if(!AudioSystem.isLineSupported(info)) {
+			System.out.println("Play.playAudioStream does not handle this type of audio on this system.");
+			return;
+		}
+		try {
+			// Create a SourceDataLine for <strong class="highlight">play</strong> back (throws LineUnavailableException).
+			SourceDataLine dataLine = (SourceDataLine)AudioSystem.getLine(info);
+			// System.out.println( "SourceDataLine class=" + dataLine.getClass() );
+
+      		// The line acquires system resources (throws LineAvailableException).
+      		dataLine.open(audioFormat);
+
+      		// Adjust the volume on the output line.
+      		if(dataLine.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
+         		FloatControl volume = (FloatControl)dataLine.getControl(FloatControl.Type.MASTER_GAIN);
+         		volume.setValue(100.0F);
+      		}
+
+      		// Allows the line to move data in and out to a port.
+      		dataLine.start();
+
+      		// Create a buffer for moving data from the audio stream to the line.   
+      		int bufferSize = (int)audioFormat.getSampleRate() * audioFormat.getFrameSize();
+      		byte[] buffer = new byte[bufferSize];
+
+      		// Move the data until done or there is an error.
+      		try {
+				int bytesRead = 0;
+				while(bytesRead >= 0) {
+					bytesRead = audioInputStream.read(buffer, 0, buffer.length);
+					if(bytesRead >= 0) {
+						int framesWritten = dataLine.write( buffer, 0, bytesRead );
+					}
+				} // while
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+			if(debug) {
+				System.out.println("Play.playAudioStream draining line.");
+			}
+			// Continues data line I/O until its buffer is drained.
+			dataLine.drain();
+
+			if(debug) {
+				System.out.println("Play.playAudioStream closing line.");
+			}
+			// Closes the data line, freeing any resources such as the audio device.
+			dataLine.close();
+		} catch (LineUnavailableException e) {
+			e.printStackTrace();
+		}
+	}
 	// -----------------------------------------
 	private int[] parse(String s) {
 		int[] output = new int[2];
@@ -144,6 +209,7 @@ public class Visualizer {
 			int turn = 0;
 			int[] remaining = {17, 17};
 			int[][] hits = new int[2][5];
+			draw();
 			for(int turns = 0; turns < 400; turns++) {
 				String command = "fire\n";
 				os[turn].write(command.getBytes());
@@ -166,6 +232,8 @@ public class Visualizer {
 						remaining[1 - turn]--;
 						hits[1 - turn][ship]++;
 						hit = ship + 1;
+						//explozor();
+						Toolkit.getDefaultToolkit().beep();
 					}
 					grid[1 - turn][a[0]][a[1]]++;
 				}
@@ -298,11 +366,7 @@ public class Visualizer {
 		resultsFrame.setTitle("Tournament Results");
 		resultsFrame.setResizable(false);
 		resultsFrame.setSize(800, 600);
-		JLabel[] resultsLabel = new JLabel[N];
-		for(int i = 0; i < N; i++) {
-			resultsLabel[i] = new JLabel(progNames[i] + " won " + wins[i] + " games.");
-			System.out.println(progNames[i] + " won " + wins[i] + " games.");
-		}
+		JTable results = new JTable();
 		resultsFrame.setVisible(true);
 	}
 	public void unterminate() {
@@ -467,7 +531,14 @@ public class Visualizer {
 	}
 	// -----------------------------------------
 	public Visualizer() throws java.io.IOException {
-		//interface for runTest
+		// prepare soundfx
+		try {
+			audioInputStream = AudioSystem.getAudioInputStream(soundFile);
+		} catch(Exception e) {
+			System.out.println("Sound file is a fail.");
+			e.printStackTrace();
+		}
+		// interface for runTest
 		if (vis) {   
 			jf = new JFrame();
 			v = new Vis();
@@ -481,7 +552,7 @@ public class Visualizer {
 	// -----------------------------------------
 	public static void main(String[] args) throws java.io.IOException {
 		vis = true;
-		del=50; // Time between each turn in ms
+		del=500; // Time between each turn in ms
 		del2=3000; // Time between each match in ms
 		if(debug) vis = false;
 		Visualizer v = new Visualizer();
@@ -492,7 +563,7 @@ public class Visualizer {
 	}
 }
 
-class ErrorReader extends Thread{
+class ErrorReader extends Thread {
 	InputStream error;
 	public ErrorReader(InputStream is) {
 		error = is;
