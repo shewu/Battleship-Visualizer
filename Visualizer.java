@@ -7,9 +7,9 @@ import javax.swing.*;
 
 public class Visualizer {
 	// Tournament info
-	static final String[] programs = {"random.exe", "9000.exe", "bruteforce.exe"};
+	static final String[] programs = {"./battleship", "java Main"};
 	static int[] wins;
-	static final int matches = 1; // Number of matches in round-robin tournament with each competitor
+	static final int matches = 5; // Number of matches in round-robin tournament with each competitor
 	String[] progNames; // Names of all programs
 	// Game variables
 	final int S = 10;		//board size
@@ -255,9 +255,11 @@ public class Visualizer {
 				unterminate();
 				int k = runTest();
 				terminate();
-				try {
+/*				try {
 					Thread.sleep(del2);
 				} catch(Exception e) {}
+*/				// Instead of delaying the next match, 
+				// we output the winner in a dialog box
 				if(progNames[matchups[i][0]] == null) {
 					progNames[matchups[i][0]] = names[0];
 				}
@@ -265,10 +267,22 @@ public class Visualizer {
 					progNames[matchups[i][1]] = names[1];
 				}
 				if(k == 0) {
+					JOptionPane.showMessageDialog(null, 
+												progNames[matchups[i][0]]+" is winner!", 
+												"Results", 
+												JOptionPane.INFORMATION_MESSAGE);
 					wins[matchups[i][0]]++;
 				} else if(k == 1) {
+					JOptionPane.showMessageDialog(null, 
+												progNames[matchups[i][1]]+" is winner!", 
+												"Results",
+												JOptionPane.INFORMATION_MESSAGE);
 					wins[matchups[i][1]]++;
 				} else {
+					JOptionPane.showMessageDialog(null, 
+												"It's a tie!", 
+												"Results",
+												JOptionPane.INFORMATION_MESSAGE);
 					System.out.println("Tie\n");
 				}
 			}
@@ -373,11 +387,11 @@ public class Visualizer {
 			// names
 			g2.setColor(Color.BLACK);
 			g2.setFont(new Font("SansSerif", Font.PLAIN, 24));
-			if(names[0] != null) {
-				g2.drawString(names[0], G, T - 10);
-			}
 			if(names[1] != null) {
-				g2.drawString(names[1], G + L*S + 2*G, T - 10);
+				g2.drawString(names[1], G, T - 10);
+			}
+			if(names[0] != null) {
+				g2.drawString(names[0], G + L*S + 2*G, T - 10);
 			}
 			// grids
 			int x0 = G;
@@ -467,7 +481,7 @@ public class Visualizer {
 	// -----------------------------------------
 	public static void main(String[] args) throws java.io.IOException {
 		vis = true;
-		del=200; // Time between each turn in ms
+		del=50; // Time between each turn in ms
 		del2=3000; // Time between each match in ms
 		if(debug) vis = false;
 		Visualizer v = new Visualizer();
