@@ -479,8 +479,19 @@ public class Visualizer {
 							g2.fillOval(x0 + j*L + L/4, y0 + i*L + L/4, L/2, L/2);
 						} else {
 							// draw X if hit
-							// draw O if miss
-							g2.drawOval(x0 + j*L + L/4, y0 + i*L + L/4, L/2, L/2);
+							if(grid[0][i][j] / 2 > 0) {
+								g2.drawLine(x0 + j*L + L/4, 
+											y0 + i*L + L/4, 
+											x0 + j*L + 3*L/4,
+											y0 + i*L + 3*L/4);
+								g2.drawLine(x0 + j*L + 3*L/4,
+											y0 + i*L + L/4,
+											x0 + j*L + L/4,
+											y0 + i*L + 3*L/4);
+							} else {
+								// draw O if miss
+								g2.drawOval(x0 + j*L + L/4, y0 + i*L + L/4, L/2, L/2);
+							}
 						}
 					}
 				}
@@ -503,8 +514,19 @@ public class Visualizer {
 							g2.fillOval(x0 + j*L + L/4, y0 + i*L + L/4, L/2, L/2);
 						} else {
 							// draw X if hit
-							// draw O if miss
-							g2.drawOval(x0 + j*L + L/4, y0 + i*L + L/4, L/2, L/2);
+							if(grid[1][i][j] / 2 > 0) {
+								g2.drawLine(x0 + j*L + L/4, 
+											y0 + i*L + L/4, 
+											x0 + j*L + 3*L/4,
+											y0 + i*L + 3*L/4);
+								g2.drawLine(x0 + j*L + 3*L/4,
+											y0 + i*L + L/4,
+											x0 + j*L + L/4,
+											y0 + i*L + 3*L/4);
+							} else {
+								// draw O if miss
+								g2.drawOval(x0 + j*L + L/4, y0 + i*L + L/4, L/2, L/2);
+							}
 						}
 					}
 				}
