@@ -213,19 +213,6 @@ public class Visualizer {
 					}
 				}
 			}
-/*			
-			// DEBUG -------------------------------------
-			for(int i = 0; i < 2; ++i) {
-				for(int j = 0; j < 10; ++j) {
-					for(int k = 0; k < 2; ++k) {
-						System.out.print(ships[i][j][k]+" ");
-					}
-					System.out.println();
-				}
-				System.out.println();
-			}
-			// END   -------------------------------------
-*/			
 			int turn = 0;
 			int[] remaining = {17, 17};
 			int[][] hits = new int[2][5];
@@ -387,7 +374,7 @@ public class Visualizer {
 		resultsFrame.setResizable(false);
 		resultsFrame.setSize(800, 600);
 		JTable results = new JTable();
-		resultsFrame.setVisible(true);
+//		resultsFrame.setVisible(true);
 	}
 	public void unterminate() {
 		if (prog1 != null) {
@@ -656,7 +643,7 @@ public class Visualizer {
 		}
 		// interface for runTest
 		if(vis) {   
-			jf = new JFrame();
+			jf = new JFrame("Battleship ON CRACK");
 			v = new Vis();
 			jf.getContentPane().add(v);
 		}
