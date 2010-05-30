@@ -9,7 +9,7 @@ import javax.sound.sampled.*;
 
 public class Visualizer {
 	// Tournament info
-	static final String[] programs = {"./battleship", "java Main"};
+	static final String[] programs = {"./battleship", "java Main", "./random", "./bruteforce"};
 	static int[] wins;
 	static final int matches = 2; // Number of matches in round-robin tournament with each competitor
 	String[] progNames; // Names of all programs
@@ -35,6 +35,10 @@ public class Visualizer {
 	// -----------------------------------------
 	// Board background image : courtesy of google images
 	BufferedImage boardBg = null;
+	// Ship images : created in Pixelmator
+	BufferedImage[] fronIm = new BufferedImage[4];
+	BufferedImage[] bodyIm = new BufferedImage[4];
+	BufferedImage[] tailIm = new BufferedImage[4];
 	// -----------------------------------------
 	public void explozor() {
 		AudioFormat audioFormat = audioInputStream.getFormat();
@@ -209,6 +213,19 @@ public class Visualizer {
 					}
 				}
 			}
+/*			
+			// DEBUG -------------------------------------
+			for(int i = 0; i < 2; ++i) {
+				for(int j = 0; j < 10; ++j) {
+					for(int k = 0; k < 2; ++k) {
+						System.out.print(ships[i][j][k]+" ");
+					}
+					System.out.println();
+				}
+				System.out.println();
+			}
+			// END   -------------------------------------
+*/			
 			int turn = 0;
 			int[] remaining = {17, 17};
 			int[][] hits = new int[2][5];
@@ -283,7 +300,7 @@ public class Visualizer {
 		}
 	}
 	public void tournament() throws IOException {
-		if (vis) {
+		if(vis) {
 			jf.setSize(W,H);
 			v.repaint();
 			jf.setVisible(true);
@@ -465,13 +482,38 @@ public class Visualizer {
 			int y0 = T;
 			// draw board background
 			g2.drawImage(boardBg, x0, y0, null);
-			// then draw grid, ships
+			// then draw ships
+			for(int i = 0; i < 5; ++i) {
+				// x is row, y is col
+				Point s = new Point(ships[0][2*i][0], ships[0][2*i][1]);
+				Point e = new Point(ships[0][2*i+1][0], ships[0][2*i+1][1]);
+				// determine which way ship faces
+				int shipDir;
+				int shipLen = (Math.abs(s.x-e.x) > Math.abs(s.y-e.y)) ? Math.abs(s.x-e.x) : Math.abs(s.y-e.y);
+				if(s.x == e.x) {
+					shipDir = (s.y > e.y) ? 0 : 2;
+				} else { // s.y == e.y
+					shipDir = (s.x > e.x) ? 3 : 1;
+				}
+				// draw head
+				g2.drawImage(fronIm[shipDir], x0 + s.y*L, y0 + s.x*L, null);
+				// draw tail
+				g2.drawImage(tailIm[shipDir], x0 + e.y*L, y0 + e.x*L, null);
+				// draw body, if there is one
+				for(int b = 1; b < shipLen; ++b) {
+					g2.drawImage(bodyIm[shipDir], 
+								x0 + ((shipDir % 2 == 0) ? b : 0)*L + s.y*L, 
+								y0 + ((shipDir % 2 == 1) ? b : 0)*L + s.x*L, 
+								null);
+				}
+			}
+			// finally draw grid
 			for(int i=0; i < S; i++) {
 				for(int j=0; j < S; j++) {
-					if(grid[0][i][j] / 2 != 0) {
-						g2.setColor(colors[grid[0][i][j] / 2]);
-						g2.fillRect(x0 + j*L, y0 + i*L, L, L);
-					}
+//					if(grid[0][i][j] / 2 != 0) {
+//						g2.setColor(colors[grid[0][i][j] / 2]);
+//						g2.fillRect(x0 + j*L, y0 + i*L, L, L);
+//					}
 					g2.setColor(Color.BLACK);
 					g2.drawRect(x0 + j*L, y0 + i*L, L, L);
 					if(grid[0][i][j] % 2 == 1) {
@@ -480,6 +522,7 @@ public class Visualizer {
 						} else {
 							// draw X if hit
 							if(grid[0][i][j] / 2 > 0) {
+								g2.setColor(Color.WHITE);
 								g2.drawLine(x0 + j*L + L/4, 
 											y0 + i*L + L/4, 
 											x0 + j*L + 3*L/4,
@@ -500,13 +543,38 @@ public class Visualizer {
 			y0 = T;
 			// draw board background
 			g2.drawImage(boardBg, x0, y0, null);
-			// then draw grid, ships
+			// then draw ships
+			for(int i = 0; i < 5; ++i) {
+				// x is row, y is col
+				Point s = new Point(ships[1][2*i][0], ships[1][2*i][1]);
+				Point e = new Point(ships[1][2*i+1][0], ships[1][2*i+1][1]);
+				// determine which way ship faces
+				int shipDir;
+				int shipLen = (Math.abs(s.x-e.x) > Math.abs(s.y-e.y)) ? Math.abs(s.x-e.x) : Math.abs(s.y-e.y);
+				if(s.x == e.x) {
+					shipDir = (s.y > e.y) ? 0 : 2;
+				} else { // s.y == e.y
+					shipDir = (s.x > e.x) ? 3 : 1;
+				}
+				// draw head
+				g2.drawImage(fronIm[shipDir], x0 + s.y*L, y0 + s.x*L, null);
+				// draw tail
+				g2.drawImage(tailIm[shipDir], x0 + e.y*L, y0 + e.x*L, null);
+				// draw body, if there is one
+				for(int b = 1; b < shipLen; ++b) {
+					g2.drawImage(bodyIm[shipDir], 
+								x0 + ((shipDir % 2 == 0) ? b : 0)*L + s.y*L, 
+								y0 + ((shipDir % 2 == 1) ? b : 0)*L + s.x*L, 
+								null);
+				}
+			}
+			// finally draw grid
 			for(int i=0; i < S; i++) {
 				for(int j=0; j < S; j++) {
-					if(grid[1][i][j] / 2 != 0) {
-						g2.setColor(colors[grid[1][i][j] / 2]);
-						g2.fillRect(x0 + j*L, y0 + i*L, L, L);
-					}
+//					if(grid[1][i][j] / 2 != 0) {
+//						g2.setColor(colors[grid[1][i][j] / 2]);
+//						g2.fillRect(x0 + j*L, y0 + i*L, L, L);
+//					}
 					g2.setColor(Color.BLACK);
 					g2.drawRect(x0 + j*L, y0 + i*L, L, L);
 					if(grid[1][i][j] % 2 == 1) {
@@ -515,6 +583,7 @@ public class Visualizer {
 						} else {
 							// draw X if hit
 							if(grid[1][i][j] / 2 > 0) {
+								g2.setColor(Color.WHITE);
 								g2.drawLine(x0 + j*L + L/4, 
 											y0 + i*L + L/4, 
 											x0 + j*L + 3*L/4,
@@ -575,6 +644,12 @@ public class Visualizer {
 			audioInputStream = AudioSystem.getAudioInputStream(soundFile);
 			// prepare board background
 			boardBg = ImageIO.read(new File("rsrc/ocean.jpg"));
+			// prepare ship images
+			for(int i = 0; i < 4; ++i) {
+				fronIm[i] = ImageIO.read(new File("rsrc/front"+(90*i)+".png"));
+				bodyIm[i] = ImageIO.read(new File("rsrc/body"+(90*i)+".png"));
+				tailIm[i] = ImageIO.read(new File("rsrc/tail"+(90*i)+".png"));
+			}
 		} catch(Exception e) {
 			System.out.println("Holy balls!");
 			e.printStackTrace();
