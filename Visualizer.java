@@ -691,7 +691,11 @@ public class Visualizer {
 	// -----------------------------------------
 	public static void main(String[] args) throws java.io.IOException {
 		vis = true;
-		del=1; // Time between each turn in ms
+		if(debug2) {
+			del=1; // Time between each turn in ms
+		} else {
+			del=100;
+		}
 		del2=3000; // Time between each match in ms
 		if(debug) {
 			vis = false;
