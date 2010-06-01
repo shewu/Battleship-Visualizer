@@ -10,6 +10,7 @@ import javax.sound.sampled.*;
 public class Visualizer {
 	// Tournament info
 	static final String[] programs = {"./battleship", "java Main", "./random", "./bruteforce"};
+	static int winLoseGrid[][] = new int[programs.length][programs.length]; // A beats B winLoseGrid[A][B] times
 	static int[] wins;
 	static final int matches = 2; // Number of matches in round-robin tournament with each competitor
 	String[] progNames; // Names of all programs
@@ -655,7 +656,7 @@ public class Visualizer {
 	// -----------------------------------------
 	public static void main(String[] args) throws java.io.IOException {
 		vis = true;
-		del=250; // Time between each turn in ms
+		del=50; // Time between each turn in ms
 		del2=3000; // Time between each match in ms
 		if(debug) vis = false;
 		Visualizer v = new Visualizer();
