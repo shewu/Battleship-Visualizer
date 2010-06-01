@@ -12,7 +12,7 @@ public class Visualizer {
 	static final String[] programs = {"./battleship", "java Main", "./random", "./bruteforce"};
 	static int winLoseGrid[][] = new int[programs.length][programs.length]; // A beats B winLoseGrid[A][B] times
 	static int[] wins;
-	static final int matches = 2; // Number of matches in round-robin tournament with each competitor
+	static final int matches = 99; // Number of matches in round-robin tournament with each competitor
 	String[] progNames; // Names of all programs
 	// Game variables
 	final int S = 10; //board size
@@ -23,6 +23,7 @@ public class Visualizer {
 	final int[] lengths = {5, 4, 3, 3, 2};
 	int[][][] grid = new int[2][S][S];
 	final static boolean debug = false;
+	final static boolean debug2 = true;
 	// ----------------------------------------
 	final int L = 32; // Length of square
 	final int G = 20; // Gap width
@@ -345,24 +346,30 @@ public class Visualizer {
 					progNames[matchups[i][1]] = names[1];
 				}
 				if(k == 0) {
-					JOptionPane.showMessageDialog(null, 
+					if(!debug2) {
+						JOptionPane.showMessageDialog(null, 
 												progNames[matchups[i][0]]+" is winner!", 
 												"Results", 
 												JOptionPane.INFORMATION_MESSAGE);
+					}
 					++winLoseGrid[matchups[i][0]][matchups[i][1]];
 					++wins[matchups[i][0]];
 				} else if(k == 1) {
-					JOptionPane.showMessageDialog(null, 
+					if(!debug2) {
+						JOptionPane.showMessageDialog(null, 
 												progNames[matchups[i][1]]+" is winner!", 
 												"Results",
 												JOptionPane.INFORMATION_MESSAGE);
+					}
 					++winLoseGrid[matchups[i][0]][matchups[i][1]];
 					++wins[matchups[i][1]];
 				} else {
-					JOptionPane.showMessageDialog(null, 
+					if(!debug2) {
+						JOptionPane.showMessageDialog(null, 
 												"It's a tie!", 
 												"Results",
 												JOptionPane.INFORMATION_MESSAGE);
+					}
 					System.out.println("Tie\n");
 				}
 			}
@@ -663,15 +670,19 @@ public class Visualizer {
 		br = new BufferedReader[2];
 		tournament();
 
-		System.out.print("  ");
+		System.out.println("=== RESULTS ===");
 		for(int i = 0; i < winLoseGrid.length; ++i) {
-			System.out.print((i+1)+" ");
+			System.out.println((i+1)+" = "+progNames[i]);
+		}
+		System.out.print("\n\t");
+		for(int i = 0; i < winLoseGrid.length; ++i) {
+			System.out.print((i+1)+"\t");
 		}
 		System.out.println();
 		for(int i = 0; i < winLoseGrid.length; ++i) {
-			System.out.print((i+1)+" ");
+			System.out.print((i+1)+"\t");
 			for(int j = 0; j < winLoseGrid.length; ++j) {
-				System.out.print(winLoseGrid[i][j]+" ");
+				System.out.print(winLoseGrid[i][j]+"\t");
 			}
 			System.out.println();
 		}
@@ -680,9 +691,11 @@ public class Visualizer {
 	// -----------------------------------------
 	public static void main(String[] args) throws java.io.IOException {
 		vis = true;
-		del=50; // Time between each turn in ms
+		del=1; // Time between each turn in ms
 		del2=3000; // Time between each match in ms
-		if(debug) vis = false;
+		if(debug) {
+			vis = false;
+		}
 		Visualizer v = new Visualizer();
 	}
 	// -----------------------------------------
