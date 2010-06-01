@@ -474,6 +474,12 @@ public class Visualizer {
 			int y0 = T;
 			// draw board background
 			g2.drawImage(boardBg, x0, y0, null);
+
+			/*
+			 * There is a problem with drawing the bodies of ships 
+			 * that face downwards at least on Ubuntu. WTF?!
+			 */
+
 			// then draw ships
 			for(int i = 0; i < 5; ++i) {
 				// x is row, y is col
