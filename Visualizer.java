@@ -193,7 +193,9 @@ public class Visualizer {
 						throw new Exception("Ship not horizontal/vertical");
 					}
 					int d = dx + dy;
-					if(d < 0) d = -d;
+					if(d < 0) {
+						d = -d;
+					}
 					d++;
 					if(d != lengths[j / 2]) {
 						winner = 1 - i;
@@ -347,13 +349,15 @@ public class Visualizer {
 												progNames[matchups[i][0]]+" is winner!", 
 												"Results", 
 												JOptionPane.INFORMATION_MESSAGE);
-					wins[matchups[i][0]]++;
+					++winLoseGrid[matchups[i][0]][matchups[i][1]];
+					++wins[matchups[i][0]];
 				} else if(k == 1) {
 					JOptionPane.showMessageDialog(null, 
 												progNames[matchups[i][1]]+" is winner!", 
 												"Results",
 												JOptionPane.INFORMATION_MESSAGE);
-					wins[matchups[i][1]]++;
+					++winLoseGrid[matchups[i][0]][matchups[i][1]];
+					++wins[matchups[i][1]];
 				} else {
 					JOptionPane.showMessageDialog(null, 
 												"It's a tie!", 
@@ -556,7 +560,7 @@ public class Visualizer {
 								null);
 				}
 			}
-			// finally draw grid
+			// finally draw 
 			for(int i=0; i < S; i++) {
 				for(int j=0; j < S; j++) {
 //					if(grid[1][i][j] / 2 != 0) {
@@ -652,6 +656,20 @@ public class Visualizer {
 		os = new OutputStream[2];
 		br = new BufferedReader[2];
 		tournament();
+
+		System.out.print("  ");
+		for(int i = 0; i < winLoseGrid.length; ++i) {
+			System.out.print((i+1)+" ");
+		}
+		System.out.println();
+		for(int i = 0; i < winLoseGrid.length; ++i) {
+			System.out.print((i+1)+" ");
+			for(int j = 0; j < winLoseGrid.length; ++j) {
+				System.out.print(winLoseGrid[i][j]+" ");
+			}
+			System.out.println();
+		}
+
 	}
 	// -----------------------------------------
 	public static void main(String[] args) throws java.io.IOException {
