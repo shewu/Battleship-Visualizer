@@ -523,7 +523,7 @@ public class Visualizer {
 					g2.drawImage(bodyIm[shipDir], x0 + u*L + s.y*L, y0 + v*L + s.x*L, null);
 				}
 			}
-			// finally draw grid
+			// finally draw 
 			for(int i=0; i < S; i++) {
 				for(int j=0; j < S; j++) {
 //					if(grid[1][i][j] / 2 != 0) {
