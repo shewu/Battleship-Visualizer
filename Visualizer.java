@@ -9,10 +9,10 @@ import javax.sound.sampled.*;
 
 public class Visualizer {
 	// Tournament info
-	static final String[] programs = {"./battleship", "java Main", "./random", "./bruteforce"};
+	static final String[] programs = {"./secundus", "./random", "java Main", "./bruteforce"};
 	static int winLoseGrid[][] = new int[programs.length][programs.length]; // A beats B winLoseGrid[A][B] times
 	static int[] wins;
-	static final int matches = 2; // Number of matches in round-robin tournament with each competitor
+	static final int matches = 5; // Number of matches in round-robin tournament with each competitor
 	String[] progNames; // Names of all programs
 	// Game variables
 	final int S = 10; //board size
@@ -23,6 +23,7 @@ public class Visualizer {
 	final int[] lengths = {5, 4, 3, 3, 2};
 	int[][][] grid = new int[2][S][S];
 	final static boolean debug = false;
+	final static boolean debug2 = false;
 	// ----------------------------------------
 	final int L = 32; // Length of square
 	final int G = 20; // Gap width
@@ -30,75 +31,12 @@ public class Visualizer {
 	final int W = 2*S*L + 4*G;
 	final int H = L*S + 3*G + T;
 	// -----------------------------------------
-	// Sound : credits to http://www.daniweb.com/forums/thread17484.html
-	File soundFile = new File("rsrc/explozor.wav");
-	AudioInputStream audioInputStream;
-	// -----------------------------------------
 	// Board background image : courtesy of google images
 	BufferedImage boardBg = null;
 	// Ship images : created in Pixelmator
 	BufferedImage[] fronIm = new BufferedImage[4];
 	BufferedImage[] bodyIm = new BufferedImage[4];
 	BufferedImage[] tailIm = new BufferedImage[4];
-	// -----------------------------------------
-	public void explozor() {
-		AudioFormat audioFormat = audioInputStream.getFormat();
-		if(debug) {
-			System.out.println("Play input audio format = "+audioFormat);
-		}
-		DataLine.Info info = new DataLine.Info(SourceDataLine.class, audioFormat);
-		if(!AudioSystem.isLineSupported(info)) {
-			System.out.println("Play.playAudioStream does not handle this type of audio on this system.");
-			return;
-		}
-		try {
-			// Create a SourceDataLine for <strong class="highlight">play</strong> back (throws LineUnavailableException).
-			SourceDataLine dataLine = (SourceDataLine)AudioSystem.getLine(info);
-
-      		// The line acquires system resources (throws LineAvailableException).
-      		dataLine.open(audioFormat);
-
-      		// Adjust the volume on the output line.
-      		if(dataLine.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
-         		FloatControl volume = (FloatControl)dataLine.getControl(FloatControl.Type.MASTER_GAIN);
-         		volume.setValue(100.0F);
-      		}
-
-      		// Allows the line to move data in and out to a port.
-      		dataLine.start();
-
-      		// Create a buffer for moving data from the audio stream to the line.   
-      		int bufferSize = (int)audioFormat.getSampleRate() * audioFormat.getFrameSize();
-      		byte[] buffer = new byte[bufferSize];
-
-      		// Move the data until done or there is an error.
-      		try {
-				int bytesRead = 0;
-				while(bytesRead >= 0) {
-					bytesRead = audioInputStream.read(buffer, 0, buffer.length);
-					if(bytesRead >= 0) {
-						int framesWritten = dataLine.write( buffer, 0, bytesRead );
-					}
-				} // while
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-
-			if(debug) {
-				System.out.println("Play.playAudioStream draining line.");
-			}
-			// Continues data line I/O until its buffer is drained.
-			dataLine.drain();
-
-			if(debug) {
-				System.out.println("Play.playAudioStream closing line.");
-			}
-			// Closes the data line, freeing any resources such as the audio device.
-			dataLine.close();
-		} catch (LineUnavailableException e) {
-			e.printStackTrace();
-		}
-	}
 	// -----------------------------------------
 	private int[] parse(String s) {
 		int[] output = new int[2];
@@ -193,7 +131,9 @@ public class Visualizer {
 						throw new Exception("Ship not horizontal/vertical");
 					}
 					int d = dx + dy;
-					if(d < 0) d = -d;
+					if(d < 0) {
+						d = -d;
+					}
 					d++;
 					if(d != lengths[j / 2]) {
 						winner = 1 - i;
@@ -240,7 +180,7 @@ public class Visualizer {
 						remaining[1 - turn]--;
 						hits[1 - turn][ship]++;
 						hit = ship + 1;
-						//explozor();
+						//new AePlayWave("rsrc/explozor.wav").start();
 						Toolkit.getDefaultToolkit().beep();
 					}
 					grid[1 - turn][a[0]][a[1]]++;
@@ -343,22 +283,32 @@ public class Visualizer {
 					progNames[matchups[i][1]] = names[1];
 				}
 				if(k == 0) {
-					JOptionPane.showMessageDialog(null, 
+					if(!debug2) {
+						JOptionPane.showMessageDialog(null, 
 												progNames[matchups[i][0]]+" is winner!", 
 												"Results", 
 												JOptionPane.INFORMATION_MESSAGE);
-					wins[matchups[i][0]]++;
+					}
+					++winLoseGrid[matchups[i][0]][matchups[i][1]];
+					++wins[matchups[i][0]];
 				} else if(k == 1) {
-					JOptionPane.showMessageDialog(null, 
+					if(!debug2) {
+						JOptionPane.showMessageDialog(null, 
 												progNames[matchups[i][1]]+" is winner!", 
 												"Results",
 												JOptionPane.INFORMATION_MESSAGE);
-					wins[matchups[i][1]]++;
+					}
+					++winLoseGrid[matchups[i][0]][matchups[i][1]];
+					++wins[matchups[i][1]];
 				} else {
-					JOptionPane.showMessageDialog(null, 
+					if(!debug2) {
+						JOptionPane.showMessageDialog(null, 
 												"It's a tie!", 
 												"Results",
 												JOptionPane.INFORMATION_MESSAGE);
+					}
+					--winLoseGrid[matchups[i][0]][matchups[i][1]];
+					--winLoseGrid[matchups[i][1]][matchups[i][0]];
 					System.out.println("Tie\n");
 				}
 			}
@@ -470,6 +420,12 @@ public class Visualizer {
 			int y0 = T;
 			// draw board background
 			g2.drawImage(boardBg, x0, y0, null);
+
+			/*
+			 * There is a problem with drawing the bodies of ships 
+			 * that face downwards at least on Ubuntu. WTF?!
+			 */
+
 			// then draw ships
 			for(int i = 0; i < 5; ++i) {
 				// x is row, y is col
@@ -550,10 +506,21 @@ public class Visualizer {
 				g2.drawImage(tailIm[shipDir], x0 + e.y*L, y0 + e.x*L, null);
 				// draw body, if there is one
 				for(int b = 1; b < shipLen; ++b) {
-					g2.drawImage(bodyIm[shipDir], 
-								x0 + ((shipDir % 2 == 0) ? b : 0)*L + s.y*L, 
-								y0 + ((shipDir % 2 == 1) ? b : 0)*L + s.x*L, 
-								null);
+					int u, v;
+					if(shipDir == 0) {
+						u = -b;
+						v = 0;
+					} else if(shipDir == 1) {
+						u = 0;
+						v = b;
+					} else if(shipDir == 2) {
+						u = b;
+						v = 0;
+					} else { // shipDir == 3
+						u = 0;
+						v = -b;
+					}
+					g2.drawImage(bodyIm[shipDir], x0 + u*L + s.y*L, y0 + v*L + s.x*L, null);
 				}
 			}
 			// finally draw grid
@@ -628,8 +595,6 @@ public class Visualizer {
 	// -----------------------------------------
 	public Visualizer() throws java.io.IOException {
 		try {
-			// prepare soundfx
-			audioInputStream = AudioSystem.getAudioInputStream(soundFile);
 			// prepare board background
 			boardBg = ImageIO.read(new File("rsrc/ocean.jpg"));
 			// prepare ship images
@@ -652,13 +617,37 @@ public class Visualizer {
 		os = new OutputStream[2];
 		br = new BufferedReader[2];
 		tournament();
+
+		System.out.println("=== RESULTS ===");
+		for(int i = 0; i < winLoseGrid.length; ++i) {
+			System.out.println((i+1)+" = "+progNames[i]);
+		}
+		System.out.print("\n\t");
+		for(int i = 0; i < winLoseGrid.length; ++i) {
+			System.out.print((i+1)+"\t");
+		}
+		System.out.println();
+		for(int i = 0; i < winLoseGrid.length; ++i) {
+			System.out.print((i+1)+"\t");
+			for(int j = 0; j < winLoseGrid.length; ++j) {
+				System.out.print(winLoseGrid[i][j]+"\t");
+			}
+			System.out.println();
+		}
+
 	}
 	// -----------------------------------------
 	public static void main(String[] args) throws java.io.IOException {
 		vis = true;
-		del=50; // Time between each turn in ms
+		if(debug2) {
+			del=1; // Time between each turn in ms
+		} else {
+			del=75;
+		}
 		del2=3000; // Time between each match in ms
-		if(debug) vis = false;
+		if(debug) {
+			vis = false;
+		}
 		Visualizer v = new Visualizer();
 	}
 	// -----------------------------------------
@@ -685,3 +674,94 @@ class ErrorReader extends Thread {
 	}
 }
 
+class AePlayWave extends Thread {
+ 
+    private String filename;
+ 
+    private Position curPosition;
+ 
+    private final int EXTERNAL_BUFFER_SIZE = 524288; // 128Kb
+ 
+    enum Position {
+        LEFT, RIGHT, NORMAL
+    };
+ 
+    public AePlayWave(String wavfile) {
+        filename = wavfile;
+        curPosition = Position.NORMAL;
+    }
+ 
+    public AePlayWave(String wavfile, Position p) {
+        filename = wavfile;
+        curPosition = p;
+    }
+ 
+    public void run() {
+ 
+        File soundFile = new File(filename);
+        if (!soundFile.exists()) {
+            System.err.println("Wave file not found: " + filename);
+            return;
+        }
+ 
+        AudioInputStream audioInputStream = null;
+        try {
+            audioInputStream = AudioSystem.getAudioInputStream(soundFile);
+        } catch (UnsupportedAudioFileException e1) {
+            e1.printStackTrace();
+            return;
+        } catch (IOException e1) {
+            e1.printStackTrace();
+            return;
+        }
+ 
+        AudioFormat format = audioInputStream.getFormat();
+        SourceDataLine auline = null;
+        DataLine.Info info = new DataLine.Info(SourceDataLine.class, format);
+ 
+        try {
+            auline = (SourceDataLine) AudioSystem.getLine(info);
+            auline.open(format);
+        } catch (LineUnavailableException e) {
+            e.printStackTrace();
+            return;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
+ 
+        if (auline.isControlSupported(FloatControl.Type.PAN)) {
+            FloatControl pan = (FloatControl) auline
+                    .getControl(FloatControl.Type.PAN);
+            if (curPosition == Position.RIGHT)
+                pan.setValue(1.0f);
+            else if (curPosition == Position.LEFT)
+                pan.setValue(-1.0f);
+        } 
+ 
+        auline.start();
+        int nBytesRead = 0;
+        byte[] abData = new byte[EXTERNAL_BUFFER_SIZE];
+ 
+        try {
+            while (nBytesRead != -1) {
+                nBytesRead = audioInputStream.read(abData, 0, abData.length);
+                if (nBytesRead >= 0) {
+                    auline.write(abData, 0, nBytesRead);
+					try {
+						Thread.sleep(100);
+					} catch(Exception e) {
+						e.printStackTrace();
+					}
+				}
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        } finally {
+            auline.drain();
+            auline.close();
+        }
+ 
+    }
+}
