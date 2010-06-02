@@ -9,7 +9,7 @@ import javax.sound.sampled.*;
 
 public class Visualizer {
 	// Tournament info
-	static final String[] programs = {"./secundus", "./random", "java Main", "./bruteforce"};
+	static final String[] programs = {"./battleship", "./random", "java Main", "./bruteforce"};
 	static int winLoseGrid[][] = new int[programs.length][programs.length]; // A beats B winLoseGrid[A][B] times
 	static int[] wins;
 	static final int matches = 5; // Number of matches in round-robin tournament with each competitor
@@ -445,19 +445,26 @@ public class Visualizer {
 				g2.drawImage(tailIm[shipDir], x0 + e.y*L, y0 + e.x*L, null);
 				// draw body, if there is one
 				for(int b = 1; b < shipLen; ++b) {
-					g2.drawImage(bodyIm[shipDir], 
-								x0 + ((shipDir % 2 == 0) ? b : 0)*L + s.y*L, 
-								y0 + ((shipDir % 2 == 1) ? b : 0)*L + s.x*L, 
-								null);
+					int u, v;
+					if(shipDir == 0) {
+						u = -b;
+						v = 0;
+					} else if(shipDir == 1) {
+						u = 0;
+						v = b;
+					} else if(shipDir == 2) {
+						u = b;
+						v = 0;
+					} else { // shipDir == 3
+						u = 0;
+						v = -b;
+					}
+					g2.drawImage(bodyIm[shipDir], x0 + u*L + s.y*L, y0 + v*L + s.x*L, null);
 				}
 			}
 			// finally draw grid
 			for(int i=0; i < S; i++) {
 				for(int j=0; j < S; j++) {
-//					if(grid[0][i][j] / 2 != 0) {
-//						g2.setColor(colors[grid[0][i][j] / 2]);
-//						g2.fillRect(x0 + j*L, y0 + i*L, L, L);
-//					}
 					g2.setColor(Color.BLACK);
 					g2.drawRect(x0 + j*L, y0 + i*L, L, L);
 					if(grid[0][i][j] % 2 == 1) {
