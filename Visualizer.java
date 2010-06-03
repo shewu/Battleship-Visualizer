@@ -9,10 +9,10 @@ import javax.sound.sampled.*;
 
 public class Visualizer {
 	// Tournament info
-	static final String[] programs = {"./battleship", "./random", "java Main", "./bruteforce"};
+	static final String[] programs = {"./tertius", "./random", "java Main", "./bruteforce"};
 	static int winLoseGrid[][] = new int[programs.length][programs.length]; // A beats B winLoseGrid[A][B] times
 	static int[] wins;
-	static final int matches = 5; // Number of matches in round-robin tournament with each competitor
+	static final int matches = 1; // Number of matches in round-robin tournament with each competitor
 	String[] progNames; // Names of all programs
 	// Game variables
 	final int S = 10; //board size
@@ -533,10 +533,6 @@ public class Visualizer {
 			// finally draw 
 			for(int i=0; i < S; i++) {
 				for(int j=0; j < S; j++) {
-//					if(grid[1][i][j] / 2 != 0) {
-//						g2.setColor(colors[grid[1][i][j] / 2]);
-//						g2.fillRect(x0 + j*L, y0 + i*L, L, L);
-//					}
 					g2.setColor(Color.BLACK);
 					g2.drawRect(x0 + j*L, y0 + i*L, L, L);
 					if(grid[1][i][j] % 2 == 1) {
@@ -637,7 +633,7 @@ public class Visualizer {
 		for(int i = 0; i < winLoseGrid.length; ++i) {
 			System.out.print((i+1)+"\t");
 			for(int j = 0; j < winLoseGrid.length; ++j) {
-				System.out.print(winLoseGrid[i][j]+"\t");
+				System.out.print(winLoseGrid[j][i]+"\t");
 			}
 			System.out.println();
 		}
@@ -772,3 +768,4 @@ class AePlayWave extends Thread {
  
     }
 }
+
