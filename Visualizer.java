@@ -9,7 +9,7 @@ import javax.sound.sampled.*;
 
 public class Visualizer {
 	// Tournament info
-	static final String[] programs = {"./tertius", "java Main"};
+	static final String[] programs = {"./tertius", "./rawr"};
 	static int winLoseGrid[][] = new int[programs.length][programs.length]; // A beats B winLoseGrid[A][B] times
 	static Point[] accuracy = new Point[programs.length];
 	static int[] wins;
@@ -463,11 +463,20 @@ public class Visualizer {
 			// names
 			g2.setColor(Color.BLACK);
 			g2.setFont(new Font("SansSerif", Font.PLAIN, 24));
-			if(names[1] != null) {
+			if(names[1] != null && names[1].length() < 25) {
 				g2.drawString(names[1], G, T - 10);
+			} else if(names[1] != null && names[1].length() >= 25) {
+				g2.drawString(names[1].substring(0, 25), G, T - 10);
+			} else {
+				g2.drawString("NO NAME", G, T - 10);
 			}
-			if(names[0] != null) {
+			
+			if(names[0] != null && names[0].length() < 25) {
 				g2.drawString(names[0], G + L*S + 2*G, T - 10);
+			} else if(names[0] != null && names[0].length() >= 25) {
+				g2.drawString(names[0].substring(0, 25), G + L*S + 2*G, T - 10);	
+			} else {
+				g2.drawString("NO NAME", G + L*S + 2*G, T - 10);
 			}
 			// grids
 			int x0 = G;
