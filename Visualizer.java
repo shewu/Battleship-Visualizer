@@ -9,10 +9,11 @@ import javax.sound.sampled.*;
 
 public class Visualizer {
 	// Tournament info
-	static final String[] programs = {"./tertius", "./random", "java Main", "./bruteforce"};
+	static final String[] programs = {"./tertius", "java Main"};
 	static int winLoseGrid[][] = new int[programs.length][programs.length]; // A beats B winLoseGrid[A][B] times
+	static Point[] accuracy = new Point[programs.length];
 	static int[] wins;
-	static final int matches = 1; // Number of matches in round-robin tournament with each competitor
+	static int matches = 10; // Number of matches in round-robin tournament with each competitor
 	String[] progNames; // Names of all programs
 	// Game variables
 	final int S = 10; //board size
@@ -23,7 +24,8 @@ public class Visualizer {
 	final int[] lengths = {5, 4, 3, 3, 2};
 	int[][][] grid = new int[2][S][S];
 	final static boolean debug = false;
-	final static boolean debug2 = false;
+	static boolean tourneyMode = false;
+	static boolean playSound = false;
 	// ----------------------------------------
 	final int L = 32; // Length of square
 	final int G = 20; // Gap width
@@ -73,6 +75,41 @@ public class Visualizer {
 			} else {
 				return 2;
 			}
+		}
+	}
+	// -----------------------------------------
+	public int getIndexOf(String progName) {
+		for(int i = 0; i < progNames.length; ++i) {
+			if(progName.equals(programs[i])) {
+				return i;
+			}
+		}
+		return -1;
+	}
+	// -----------------------------------------
+	public void printAccuracy() {
+		System.out.println("=== ACCURACY ===");
+		for(int i = 0; i < programs.length; ++i) {
+			System.out.println(programs[i]+" : "+(100*(double)accuracy[i].x)/accuracy[i].y+"%");
+		}
+	}
+	// -----------------------------------------
+	public void printScoreMatrix() {
+		System.out.println("=== RESULTS ===");
+		for(int i = 0; i < winLoseGrid.length; ++i) {
+			System.out.println((i+1)+" = "+progNames[i]);
+		}
+		System.out.print("\n\t");
+		for(int i = 0; i < winLoseGrid.length; ++i) {
+			System.out.print((i+1)+"\t");
+		}
+		System.out.println();
+		for(int i = 0; i < winLoseGrid.length; ++i) {
+			System.out.print((i+1)+"\t");
+			for(int j = 0; j < winLoseGrid.length; ++j) {
+				System.out.print(winLoseGrid[i][j]+"\t");
+			}
+			System.out.println();
 		}
 	}
 	// -----------------------------------------
@@ -174,14 +211,30 @@ public class Visualizer {
 				}
     	        lastShots[turn] = a;
 				int hit = 0;
+
+				if(turn == 0 && getIndexOf(prog1) > -1) {
+					++accuracy[getIndexOf(prog1)].y;
+				} else if(turn == 1 && getIndexOf(prog2) > -1){
+					++accuracy[getIndexOf(prog2)].y;
+				}
+
 				if(grid[1 - turn][a[0]][a[1]] % 2 == 0) {
 					if(grid[1 - turn][a[0]][a[1]] > 0) {
 						int ship = grid[1 - turn][a[0]][a[1]] / 2 - 1;
 						remaining[1 - turn]--;
 						hits[1 - turn][ship]++;
 						hit = ship + 1;
-						//new AePlayWave("rsrc/explozor.wav").start();
-						Toolkit.getDefaultToolkit().beep();
+						if(turn == 0) {
+							++accuracy[getIndexOf(prog1)].x;
+							if(del >= 100 && playSound) {
+								new AePlayWave("rsrc/p1.wav").start();
+							}
+						} else { // turn == 1
+							++accuracy[getIndexOf(prog2)].x;
+							if(del >= 100 && playSound) {
+								new AePlayWave("rsrc/p2.wav").start();
+							}
+						}
 					}
 					grid[1 - turn][a[0]][a[1]]++;
 				}
@@ -265,16 +318,14 @@ public class Visualizer {
 				matchups[i] = x;
 			}
 			// Now we play
-			for(int i=0; i < K; i++) {
+			for(int i = 0; i < K; i++) {
 				prog1 = programs[matchups[i][0]];
 				prog2 = programs[matchups[i][1]];
+
 				unterminate();
 				int k = runTest();
 				terminate();
-/*				try {
-					Thread.sleep(del2);
-				} catch(Exception e) {}
-*/				// Instead of delaying the next match, 
+
 				// we output the winner in a dialog box
 				if(progNames[matchups[i][0]] == null) {
 					progNames[matchups[i][0]] = names[0];
@@ -283,7 +334,7 @@ public class Visualizer {
 					progNames[matchups[i][1]] = names[1];
 				}
 				if(k == 0) {
-					if(!debug2) {
+					if(!tourneyMode) {
 						JOptionPane.showMessageDialog(null, 
 												progNames[matchups[i][0]]+" is winner!", 
 												"Results", 
@@ -292,7 +343,7 @@ public class Visualizer {
 					++winLoseGrid[matchups[i][0]][matchups[i][1]];
 					++wins[matchups[i][0]];
 				} else if(k == 1) {
-					if(!debug2) {
+					if(!tourneyMode) {
 						JOptionPane.showMessageDialog(null, 
 												progNames[matchups[i][1]]+" is winner!", 
 												"Results",
@@ -301,7 +352,7 @@ public class Visualizer {
 					++winLoseGrid[matchups[i][0]][matchups[i][1]];
 					++wins[matchups[i][1]];
 				} else {
-					if(!debug2) {
+					if(!tourneyMode) {
 						JOptionPane.showMessageDialog(null, 
 												"It's a tie!", 
 												"Results",
@@ -313,6 +364,9 @@ public class Visualizer {
 				}
 			}
 		}
+		
+		printAccuracy();
+		printScoreMatrix();
 		// Output results to a JFrame
 		/**
 		Todo:
@@ -420,11 +474,6 @@ public class Visualizer {
 			int y0 = T;
 			// draw board background
 			g2.drawImage(boardBg, x0, y0, null);
-
-			/*
-			 * There is a problem with drawing the bodies of ships 
-			 * that face downwards at least on Ubuntu. WTF?!
-			 */
 
 			// then draw ships
 			for(int i = 0; i < 5; ++i) {
@@ -597,6 +646,12 @@ public class Visualizer {
 	}
 	// -----------------------------------------
 	public Visualizer() throws java.io.IOException {
+		for(int i = 0; i < accuracy.length; ++i) {
+			accuracy[i] = new Point();
+		}
+		if(tourneyMode) {
+			matches = 9;
+		}
 		try {
 			// prepare board background
 			boardBg = ImageIO.read(new File("rsrc/ocean.jpg"));
@@ -621,31 +676,22 @@ public class Visualizer {
 		br = new BufferedReader[2];
 		tournament();
 
-		System.out.println("=== RESULTS ===");
-		for(int i = 0; i < winLoseGrid.length; ++i) {
-			System.out.println((i+1)+" = "+progNames[i]);
-		}
-		System.out.print("\n\t");
-		for(int i = 0; i < winLoseGrid.length; ++i) {
-			System.out.print((i+1)+"\t");
-		}
-		System.out.println();
-		for(int i = 0; i < winLoseGrid.length; ++i) {
-			System.out.print((i+1)+"\t");
-			for(int j = 0; j < winLoseGrid.length; ++j) {
-				System.out.print(winLoseGrid[j][i]+"\t");
-			}
-			System.out.println();
-		}
 
 	}
 	// -----------------------------------------
-	public static void main(String[] args) throws java.io.IOException {
+	public static void main(String[] args) throws IOException {
+		for(String s : args) {
+			if(s.equals("sound")) {
+				playSound = true;
+			} else if(s.equals("tourney")) {
+				tourneyMode = true;
+			}
+		}
 		vis = true;
-		if(debug2) {
+		if(tourneyMode) {
 			del=1; // Time between each turn in ms
 		} else {
-			del=75;
+			del=100;
 		}
 		del2=3000; // Time between each match in ms
 		if(debug) {
@@ -678,13 +724,9 @@ class ErrorReader extends Thread {
 }
 
 class AePlayWave extends Thread {
- 
     private String filename;
- 
     private Position curPosition;
- 
     private final int EXTERNAL_BUFFER_SIZE = 524288; // 128Kb
- 
     enum Position {
         LEFT, RIGHT, NORMAL
     };
@@ -700,7 +742,6 @@ class AePlayWave extends Thread {
     }
  
     public void run() {
- 
         File soundFile = new File(filename);
         if (!soundFile.exists()) {
             System.err.println("Wave file not found: " + filename);
