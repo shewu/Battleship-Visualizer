@@ -9,7 +9,7 @@ import javax.sound.sampled.*;
 
 public class Visualizer {
 	// Tournament info
-	static final String[] programs = {"./tertius", "./rawr"};
+	static final String[] programs = {"./tertius", "./rawr", "java Main", "./bob", "./9000"};
 	static int winLoseGrid[][] = new int[programs.length][programs.length]; // A beats B winLoseGrid[A][B] times
 	static Point[] accuracy = new Point[programs.length];
 	static int[] wins;
@@ -90,7 +90,7 @@ public class Visualizer {
 	public void printAccuracy() {
 		System.out.println("=== ACCURACY ===");
 		for(int i = 0; i < programs.length; ++i) {
-			System.out.println(programs[i]+" : "+(100*(double)accuracy[i].x)/accuracy[i].y+"%");
+			System.out.println(progNames[i]+" : "+(100*(double)accuracy[i].x)/accuracy[i].y+"%");
 		}
 	}
 	// -----------------------------------------
@@ -658,9 +658,6 @@ public class Visualizer {
 		for(int i = 0; i < accuracy.length; ++i) {
 			accuracy[i] = new Point();
 		}
-		if(tourneyMode) {
-			matches = 9;
-		}
 		try {
 			// prepare board background
 			boardBg = ImageIO.read(new File("rsrc/ocean.jpg"));
@@ -692,16 +689,25 @@ public class Visualizer {
 		for(String s : args) {
 			if(s.equals("sound")) {
 				playSound = true;
+				System.out.println("Sound ON");
+				System.out.println("Play mode VERSUS");
 			} else if(s.equals("tourney")) {
 				tourneyMode = true;
+				System.out.println("Sound OFF");
+				System.out.println("Play mode TOURNEY");
+			} else {
+				System.out.println("Sound OFF");
+				System.out.println("Play mode VERSUS");
 			}
 		}
 		vis = true;
 		if(tourneyMode) {
 			del=1; // Time between each turn in ms
+			matches = 399;
 		} else {
 			del=100;
 		}
+		System.out.println("Delay "+del);
 		del2=3000; // Time between each match in ms
 		if(debug) {
 			vis = false;
@@ -723,7 +729,7 @@ class ErrorReader extends Thread {
 		try {
 			byte[] ch = new byte[50000];
 			int read;
-			while ((read = error.read(ch)) > 0) {   
+			while((read = error.read(ch)) > 0) {   
 				String s = new String(ch,0,read);
 				System.out.print(s);
 				System.out.flush();
