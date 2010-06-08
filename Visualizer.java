@@ -9,11 +9,11 @@ import javax.sound.sampled.*;
 
 public class Visualizer {
 	// Tournament info
-	static final String[] programs = {"./tertius", "./rawr", "java Main", "./bob", "./9000"};
+	static final String[] programs = {"./tertius", "./yourmom"};
 	static int winLoseGrid[][] = new int[programs.length][programs.length]; // A beats B winLoseGrid[A][B] times
 	static Point[] accuracy = new Point[programs.length];
 	static int[] wins;
-	static int matches = 10; // Number of matches in round-robin tournament with each competitor
+	static int matches = 1; // Number of matches in round-robin tournament with each competitor
 	String[] progNames; // Names of all programs
 	// Game variables
 	final int S = 10; //board size
@@ -378,7 +378,10 @@ public class Visualizer {
 		resultsFrame.setTitle("Tournament Results");
 		resultsFrame.setResizable(false);
 		resultsFrame.setSize(800, 600);
-		JTable results = new JTable();
+		Object colNames[] = {};
+//		JTable results = new JTable(colNames, winLoseGrid);
+//		JScrollPane scrollPane = new JScrollPane(results);
+//		resultsFrame.add(scrollPane, BorderLayout.CENTER);
 //		resultsFrame.setVisible(true);
 	}
 	public void unterminate() {
@@ -703,7 +706,7 @@ public class Visualizer {
 		vis = true;
 		if(tourneyMode) {
 			del=1; // Time between each turn in ms
-			matches = 399;
+			matches = 99;
 		} else {
 			del=100;
 		}
