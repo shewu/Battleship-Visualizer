@@ -100,8 +100,24 @@ public class Visualizer {
 		}
 	}
 	// -----------------------------------------
-	public void printScoreMatrix() {
+	public void printRankings() {
+		Contestant ranks[] = new Contestant[progNames.length];
 		System.out.println("=== RESULTS ===");
+		for(int i = 0; i < progNames.length; ++i) {
+			ranks[i] = new Contestant(progNames[i]);
+			ranks[i].matches = 0;
+			for(int j = 0; j < progNames.length; ++j) {
+				ranks[i].matches += winLoseGrid[i][j];
+			}
+		}
+		Arrays.sort(ranks);
+		for(int i = 0; i < winLoseGrid.length; ++i) {
+			System.out.println((i+1)+". "+ranks[i].name+" won "+ranks[i].matches);
+		}
+	}
+	// -----------------------------------------
+	public void printScoreMatrix() {
+		System.out.println("=== FULL RESULTS ===");
 		for(int i = 0; i < winLoseGrid.length; ++i) {
 			System.out.println((i+1)+" = "+progNames[i]);
 		}
@@ -371,6 +387,7 @@ public class Visualizer {
 			}
 		}
 		
+		printRankings();
 		printAccuracy();
 		printScoreMatrix();
 		// Output results to a JFrame
@@ -709,7 +726,7 @@ public class Visualizer {
 		vis = true;
 		if(tourneyMode) {
 			del=1; // Time between each turn in ms
-			matches = 399;
+			matches = 10;
 		} else {
 			del=100;
 		}
@@ -831,3 +848,19 @@ class AePlayWave extends Thread {
     }
 }
 
+class Contestant implements Comparable {
+	public String name;
+	public int matches = 0;
+	public Contestant(String a) {
+		name = a;
+	}
+	public int compareTo(Object o) {
+		try {
+			Contestant other = (Contestant)o;
+			return this.matches - other.matches;
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+		return 0;
+	}
+}
