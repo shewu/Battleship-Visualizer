@@ -9,11 +9,15 @@ import javax.sound.sampled.*;
 
 public class Visualizer {
 	// Tournament info
-	static final String[] programs = {"./tertius", "./yourmom"};
+	static final String[] programs = {"./andcai", 
+										"./jieship", 
+										"./tertius",
+										"java Main",
+										"./jonbee"};
 	static int winLoseGrid[][] = new int[programs.length][programs.length]; // A beats B winLoseGrid[A][B] times
 	static Point[] accuracy = new Point[programs.length];
 	static int[] wins;
-	static int matches = 1; // Number of matches in round-robin tournament with each competitor
+	static int matches = 5; // Number of matches in round-robin tournament with each competitor
 	String[] progNames; // Names of all programs
 	// Game variables
 	final int S = 10; //board size
@@ -26,6 +30,8 @@ public class Visualizer {
 	final static boolean debug = false;
 	static boolean tourneyMode = false;
 	static boolean playSound = false;
+	static final String p1sound = "explozor.wav";
+	static final String p2sound = "grenade.wav";
 	// ----------------------------------------
 	final int L = 32; // Length of square
 	final int G = 20; // Gap width
@@ -227,12 +233,12 @@ public class Visualizer {
 						if(turn == 0) {
 							++accuracy[getIndexOf(prog1)].x;
 							if(del >= 100 && playSound) {
-								new AePlayWave("rsrc/p1.wav").start();
+								new AePlayWave("rsrc/"+p1sound).start();
 							}
 						} else { // turn == 1
 							++accuracy[getIndexOf(prog2)].x;
 							if(del >= 100 && playSound) {
-								new AePlayWave("rsrc/p2.wav").start();
+								new AePlayWave("rsrc/"+p2sound).start();
 							}
 						}
 					}
@@ -349,7 +355,7 @@ public class Visualizer {
 												"Results",
 												JOptionPane.INFORMATION_MESSAGE);
 					}
-					++winLoseGrid[matchups[i][0]][matchups[i][1]];
+					++winLoseGrid[matchups[i][1]][matchups[i][0]];
 					++wins[matchups[i][1]];
 				} else {
 					if(!tourneyMode) {
@@ -358,8 +364,8 @@ public class Visualizer {
 												"Results",
 												JOptionPane.INFORMATION_MESSAGE);
 					}
-					--winLoseGrid[matchups[i][0]][matchups[i][1]];
-					--winLoseGrid[matchups[i][1]][matchups[i][0]];
+//					--winLoseGrid[matchups[i][0]][matchups[i][1]];
+//					--winLoseGrid[matchups[i][1]][matchups[i][0]];
 					System.out.println("Tie\n");
 				}
 			}
@@ -378,10 +384,7 @@ public class Visualizer {
 		resultsFrame.setTitle("Tournament Results");
 		resultsFrame.setResizable(false);
 		resultsFrame.setSize(800, 600);
-		Object colNames[] = {};
-//		JTable results = new JTable(colNames, winLoseGrid);
-//		JScrollPane scrollPane = new JScrollPane(results);
-//		resultsFrame.add(scrollPane, BorderLayout.CENTER);
+		JTable results = new JTable();
 //		resultsFrame.setVisible(true);
 	}
 	public void unterminate() {
@@ -706,7 +709,7 @@ public class Visualizer {
 		vis = true;
 		if(tourneyMode) {
 			del=1; // Time between each turn in ms
-			matches = 99;
+			matches = 399;
 		} else {
 			del=100;
 		}
