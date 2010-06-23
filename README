@@ -1,0 +1,20 @@
+Battleship Visualizer
+
+This program was written for BCA Computer Team (09-10)'s first annual game tournament. It runs two or more Battleship AIs in a round-robin tournament and outputs total number of matches won and hit accuracy for each contestant. 
+
+USAGE: The programs array declaration contains the program commands to execute. Each entry should be how you normally would run the program in the command line.
+
+Here is a list of program types and how each entry should be written, assuming all dependencies are installed:
+
+- Windows executable (windows)
+	"test.exe"
+- class (windows, mac, linux)
+	"java test"
+- UNIX executable (mac, linux)
+	"./test"
+- Python script (windows, mac, linux)
+	"python test.py"
+- Ruby script (windows, mac, linux) [untested]
+	"ruby test.rb"
+
+For Python and Ruby files, enable execution on the script file and then it can be run like a UNIX executable.
